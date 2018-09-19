@@ -81,9 +81,7 @@ Module.register("MMM-LocalFeed", {
       self.items[idx] = payload;
     }
 
-    if (self.items.length === 1) {
-      self.scheduleUpdate();
-    } else if (self.itemIndex === idx) {
+    if (self.itemIndex === idx) {
       self.updateDom();
     }
   },
