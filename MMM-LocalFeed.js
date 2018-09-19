@@ -32,7 +32,7 @@ Module.register("MMM-LocalFeed", {
     wrapper.className += "small";
     if (self.items.length > 0) {
       var item = self.items[self.itemIndex];
-      wrapper.innerHTML = item.message;
+      wrapper.innerHTML = item.html;
     }
 
     return wrapper;
@@ -56,7 +56,7 @@ Module.register("MMM-LocalFeed", {
     payload.sender = sender;
     payload.received = (new Date().getTime() * 0.001) | 0;
     setDefault(payload, "id", null);
-    setDefault(payload, "message", "");
+    setDefault(payload, "html", "");
     setDefault(payload, "duration", self.config.defaultDuration);
   },
 
