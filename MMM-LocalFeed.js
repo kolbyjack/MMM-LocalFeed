@@ -20,6 +20,7 @@ Module.register("MMM-LocalFeed", {
 
     self.items = [];
     self.itemIndex = 0;
+    self.subItemIndex = 0;
     self.lastRotation = 0;
 
     setInterval(function() { self.tick(); }, 1000);
@@ -32,13 +33,13 @@ Module.register("MMM-LocalFeed", {
     wrapper.className += "small";
     if (self.items.length > 0) {
       var item = self.items[self.itemIndex];
-      wrapper.innerHTML = item.html;
+      wrapper.innerHTML = item.html[self.subItemIndex];
     }
 
     return wrapper;
   },
 
-	notificationReceived: function(notification, payload, sender) {
+  notificationReceived: function(notification, payload, sender) {
     var self = this;
 
     if (notification === "LOCALFEED_ADD_ITEM") {
@@ -56,8 +57,12 @@ Module.register("MMM-LocalFeed", {
     payload.sender = sender;
     payload.received = (new Date().getTime() * 0.001) | 0;
     setDefault(payload, "id", null);
-    setDefault(payload, "html", "");
+    setDefault(payload, "html", [""]);
     setDefault(payload, "duration", self.config.defaultDuration);
+
+    if (!Array.isArray(payload.html)) {
+      payload.html = [payload.html];
+    }
   },
 
   scheduleUpdate: function() {
@@ -82,7 +87,15 @@ Module.register("MMM-LocalFeed", {
     }
 
     if (self.itemIndex === idx) {
-      self.updateDom();
+      if (self.subItemIndex >= payload.html.length) {
+        self.itemIndex = (self.itemIndex + 1) % (self.items.length || 1);
+        self.subItemIndex = 0;
+      }
+      if (self.lastRotation === 0) {
+        self.scheduleUpdate();
+      } else {
+        self.updateDom();
+      }
     }
   },
 
@@ -97,6 +110,7 @@ Module.register("MMM-LocalFeed", {
     self.items.splice(idx, 1);
     if (self.itemIndex === idx) {
       self.itemIndex %= (self.items.length || 1);
+      self.subItemIndex = 0;
       self.scheduleUpdate();
     }
   },
@@ -113,15 +127,18 @@ Module.register("MMM-LocalFeed", {
         self.items.splice(i, 1);
         if (self.itemIndex === i) {
           activeItemRemoved = true;
-        }
-        if (self.itemIndex >= i) {
+          self.subItemIndex = -1;
+        } else if (self.itemIndex > i) {
           --self.itemIndex;
         }
       }
     }
 
     if (activeItemRemoved || now - self.lastRotation >= self.config.rotationInterval) {
-      self.itemIndex = (self.itemIndex + 1) % (self.items.length || 1);
+      if (++self.subItemIndex >= self.items[self.itemIndex].html.length) {
+        self.itemIndex = (self.itemIndex + 1) % (self.items.length || 1);
+        self.subItemIndex = 0;
+      }
       self.scheduleUpdate();
     }
   }
