@@ -91,6 +91,7 @@ Module.register("MMM-LocalFeed", {
         self.itemIndex = (self.itemIndex + 1) % (self.items.length || 1);
         self.subItemIndex = 0;
       }
+
       if (self.lastRotation === 0) {
         self.scheduleUpdate();
       } else {
@@ -135,7 +136,7 @@ Module.register("MMM-LocalFeed", {
     }
 
     if (activeItemRemoved || now - self.lastRotation >= self.config.rotationInterval) {
-      if (++self.subItemIndex >= self.items[self.itemIndex].html.length) {
+      if (self.itemIndex >= self.items.length || ++self.subItemIndex >= self.items[self.itemIndex].html.length) {
         self.itemIndex = (self.itemIndex + 1) % (self.items.length || 1);
         self.subItemIndex = 0;
       }
