@@ -54,7 +54,7 @@ Module.register("MMM-LocalFeed", {
   fixupPayload: function(payload, sender) {
     var self = this;
 
-    payload.sender = sender;
+    payload.sender = sender.name;
     payload.received = (new Date().getTime() * 0.001) | 0;
     setDefault(payload, "id", null);
     setDefault(payload, "html", [""]);
