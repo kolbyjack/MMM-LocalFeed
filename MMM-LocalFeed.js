@@ -31,10 +31,7 @@ Module.register("MMM-LocalFeed", {
     var wrapper = document.createElement("div");
 
     wrapper.className += "small";
-    if (self.items.length > 0) {
-      var item = self.items[self.itemIndex];
-      wrapper.innerHTML = item.html[self.subItemIndex];
-    }
+    wrapper.innerHTML = self.currentItem();
 
     return wrapper;
   },
@@ -74,6 +71,7 @@ Module.register("MMM-LocalFeed", {
 
   addItem: function(payload) {
     var self = this;
+    var oldItem = self.currentItem();
 
     var idx = -1;
     if (payload.id !== null) {
@@ -92,10 +90,12 @@ Module.register("MMM-LocalFeed", {
         self.subItemIndex = 0;
       }
 
-      if (self.lastRotation === 0) {
-        self.scheduleUpdate();
-      } else {
-        self.updateDom();
+      if (oldItem !== self.currentItem()) {
+        if (self.lastRotation === 0) {
+          self.scheduleUpdate();
+        } else {
+          self.updateDom();
+        }
       }
     }
   },
@@ -136,11 +136,26 @@ Module.register("MMM-LocalFeed", {
     }
 
     if (activeItemRemoved || now - self.lastRotation >= self.config.rotationInterval) {
+      var oldItem = self.currentItem();
+
       if (self.itemIndex >= self.items.length || ++self.subItemIndex >= self.items[self.itemIndex].html.length) {
         self.itemIndex = (self.itemIndex + 1) % (self.items.length || 1);
         self.subItemIndex = 0;
       }
-      self.scheduleUpdate();
+
+      if (oldItem !== self.currentItem()) {
+        self.scheduleUpdate();
+      }
+    }
+  },
+
+  currentItem: function() {
+    var self = this;
+
+    if (self.items.length > self.itemIndex) {
+      return self.items[self.itemIndex].html[self.subItemIndex];
+    } else {
+      return "";
     }
   }
 });
